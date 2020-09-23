@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-contacts-backend
+  labels:
+    app: nodejs-contacts
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs-contacts
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: nodejs-contacts
+        tier: backend
+    spec:
+     initContainers:
+        # Need to replace Mongo with Postgres
+      - name: init-db-ready
+        image: mongo:4
+        command: ['/bin/sh', '-c']
+        args:
+          - echo "Waiting for mongodb to start...";until (mongo --host nodejs-contacts-mongodb:27017 >/dev/null 2>&1) do echo "Waiting for connection for 2 sec."; sleep 2; done
+     containers:
+      - name: backend
+        image: nodejs-contacts-backend
+        ports:
+        - name: http-server
+          containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"

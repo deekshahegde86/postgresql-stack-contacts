@@ -1,0 +1,26 @@
+apiVersion: skaffold/v2beta7
+kind: Config
+metadata:
+  name: postgres-example
+build:
+  artifacts:
+  - image: nodejs-contacts-backend
+    context: postgresql-stack-contacts-server
+    sync:
+      infer:
+      - '**/*'
+  - image: nodejs-contacts-frontend
+    context: postgresql-stack-contacts-client
+    sync:
+      infer:
+      - '**/*'
+deploy:
+  kubectl:
+    manifests:
+    - ./k8s/*
+portForward:
+- resourceType: service
+  resourceName: nodejs-contacts-frontend
+  port: 80
+  address: 0.0.0.0
+  localPort: 4503
